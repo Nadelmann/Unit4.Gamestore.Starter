@@ -6,7 +6,7 @@ const REPLACE_ME = 'HELP REPLACE ME!!!!';
 // GET - /api/video-games - get all video games
 async function getAllVideoGames() {
     try {
-        const { rows: videoGames } = await client.query(REPLACE_ME);
+        const { rows: videoGames } = await client.query(`SELECT * FROM videoGames`);
         return videoGames;
     } catch (error) {
         throw new Error("Make sure you have replaced the REPLACE_ME placeholder.")
@@ -28,17 +28,39 @@ async function getVideoGameById(id) {
 
 // POST - /api/video-games - create a new video game
 async function createVideoGame(body) {
-    // LOGIC GOES HERE
+    try {
+        const {rows: [videoGame] } = await client.query(`INSERT INTO videoGames (name, description, price, "inStock", "isPopular", "imgUrl") VALUES () RETURNING *`, [body.name, body.description, body.price]);
+        return purchase;
+    } catch (err) {
+        throw err;
+    }
 }
 
 // PUT - /api/video-games/:id - update a single video game by id
 async function updateVideoGame(id, fields = {}) {
-    // LOGIC GOES HERE
+    try{
+        const toUpdate = {}
+        for (let column in fields) {
+            if (fields[column] !== undefined) toUpdate[column] = fields[column];
+        }
+        let videoGames;
+        console.log("toUpdate", toUpdate);
+
+        if(util.dbFields(toUpdate).insert.length > 0) {
+            const {rows} = await client.query(`UPDATE videoGames SET ${util.dbFields(toUpdate).insert} WHERE id=${id} RETURNING *;`, Object.values(toUpdate)); purchase = rows[0];        }
+    } catch (err) {
+        throw err
+    }
 }
 
 // DELETE - /api/video-games/:id - delete a single video game by id
 async function deleteVideoGame(id) {
-    // LOGIC GOES HERE
+   try {
+    const {rows} = await client.query(`DELETE FROM videoGames WHERE id=$1 RETURNING *`, [id]);
+    return rows[0];
+   } catch (err) {
+    throw err
+   }
 }
 
 module.exports = {
